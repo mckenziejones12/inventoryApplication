@@ -1,0 +1,6 @@
+# Ignore node modules
+# within expressInventoryApp
+expressInventoryApp/node_modules
+
+# hide MongoDB url
+.env
