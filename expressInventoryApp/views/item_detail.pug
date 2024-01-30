@@ -1,0 +1,11 @@
+extends layout 
+
+block content
+  h1= title
+  
+  p #[strong #{rental.name}]
+  p #{rental.description}
+  p #{rental.price}
+  p Stock Number: #{rental.stockNumber}
+  p #[strong Category: ] 
+    a(href=rental.category.url) #{rental.category.name}
