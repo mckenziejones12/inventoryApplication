@@ -138,10 +138,89 @@ exports.item_delete_post = asyncHandler(async (req, res, next) => {
 
 // Display Item update form on GET
 exports.item_update_get = asyncHandler(async (req, res, next) => {
-  res.send("NOT IMPLEMENTED: Item update GET");
+  // Get item and all categories
+  const [item, allCategories] = await Promise.all([
+    Item.findById(req.params.id).populate("category").exec(),
+    Category.find().sort({ name: 1 }).exec(),
+  ]);
+  if (item === null) {
+    // No results
+    const err = new Error("Item not found");
+    err.status = 404;
+    return next(err);
+  }
+  res.render("item_form", {
+    title: "Update Rental Item",
+    item: item,
+    category: allCategories,
+  });
 });
 
 // Handle Item update form on POST
-exports.item_update_post = asyncHandler(async (req, res, next) => {
-  res.send("NOT IMPLEMENTED: Item update POST");
-});
+exports.item_update_post = [
+  // Convert category to array
+  (req, res, next) => {
+    if (!Array.isArray(req.body.category)) {
+      req.body.category =
+        typeof req.body.category === "undefined" ? [] : [req.body.category];
+    }
+    next();
+  },
+
+  // Validate and Sanitize fields
+  body("name", "Name must be at least 3 characters.")
+    .trim()
+    .isLength({ min: 3 })
+    .escape(),
+  body("description", "Description must not be empty.")
+    .trim()
+    .isLength({ min: 1 })
+    .escape(),
+  body("category", "Category does not exist.")
+    .trim()
+    .isLength({ min: 1 })
+    .escape(),
+  body("price", "Price must not be empty").trim().isLength({ min: 1 }).escape(),
+  body("stockNumber", "Stock Number must not be empty.")
+    .trim()
+    .isLength({ min: 1 })
+    .escape(),
+
+  // Process request after validation and sanitization
+  asyncHandler(async (req, res, next) => {
+    // Extract validation errors from a request
+    const errors = validationResult(req);
+    // Find the category that matches the one entered in the form
+    const category = await Category.findOne({ name: req.body.category });
+
+    // Create an Item object with escaped/trimmed data and old ID
+    const item = new Item({
+      name: req.body.name,
+      description: req.body.description,
+      category: category._id,
+      price: req.body.price,
+      stockNumber: req.body.stockNumber,
+      _id: req.params.id, // this is required, or a new ID will be assigned
+    });
+    // Load the category on the item
+    await item.populate("category");
+
+    if (!errors.isEmpty()) {
+      // There are errors. Render form with sanitized values/error messages.
+      // Get categories for form
+      const allCategories = await Category.find().sort({ name: 1 }).exec();
+      res.render("item_form", {
+        title: "Update Rental Item",
+        item: item,
+        category: allCategories,
+        errors: errors.array(),
+      });
+      return;
+    } else {
+      // Data from form is valid. Update and save.
+      const updatedItem = await Item.findByIdAndUpdate(req.params.id, item, {});
+      // Redirect to item detail page
+      res.redirect(updatedItem.url);
+    }
+  }),
+];
