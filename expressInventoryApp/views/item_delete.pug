@@ -1,0 +1,9 @@
+extends layout 
+
+block content 
+
+    p Do you really want to delete this Category?
+
+    form(method="POST")
+      input(type="hidden" name="itemid" value=item._id)
+      button(type="submit") Delete
