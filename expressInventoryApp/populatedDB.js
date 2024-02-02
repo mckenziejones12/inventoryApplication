@@ -24,8 +24,8 @@ async function main() {
   mongoose.connection.close();
 }
 
-async function categoryCreate(index, name, description) {
-  const category = new Category({ name, description });
+async function categoryCreate(index, name) {
+  const category = new Category({ name });
   await category.save();
   categories[index] = category;
   console.log(`Added category: ${name}`);
@@ -57,18 +57,7 @@ async function itemCreate(
 
 async function createCategories() {
   console.log("Adding categories");
-  await Promise.all([
-    categoryCreate(
-      0,
-      "Winter",
-      "Colorado can get cold and snowy but fortunately there are many activities to keep you busy!"
-    ),
-    categoryCreate(
-      1,
-      "Summer",
-      "There are unlimited ways to stay busy in the beautiful, warm days in Colorado!"
-    ),
-  ]);
+  await Promise.all([categoryCreate(0, "Winter"), categoryCreate(1, "Summer")]);
 }
 
 async function createItems() {
