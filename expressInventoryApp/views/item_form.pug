@@ -13,7 +13,7 @@ block content
         input(type="text" name="description" required value=(undefined=== item ? "" : item.description))
         br
         label(for="category") Category: 
-        input(type="text" name="category" required value=(undefined=== item ? "" : item.category))
+        input(type="text" name="category" required value=(undefined=== item ? "" : item.category.name))
         br
         label(for="price") Price:    
         input(type="text" name="price" required value=(undefined=== item ? "" : item.price))
